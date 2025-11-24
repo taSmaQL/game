@@ -1,35 +1,47 @@
 class Sprite {
-    constructor({position, velocity, image, frames = {max: 1} }) {
+    constructor({position, velocity, image, frames = {max: 1}, sprites = [] }) {
         this.position = position
         this.image = image
-        this.frames = frames
+        this.frames = {...frames, val: 0, elapsed: 0}
         this.image.onload = () => {
             this.width = this.image.width / this.frames.max
             this.height = this.image.height
         }
-        
+        this.moving = false
+        this.sprites = sprites
     }
 
     draw() {
-        c.drawImage(this.image,
-        0, // x (cropping)
-        0, // y (cropping)
-        this.image.width / this.frames.max, // (cropping)
-        this.image.height, // (cropping)
-        this.position.x,
-        this.position.y,
-        this.image.width / this.frames.max,
-        this.image.height)
+        c.drawImage(
+            this.image,
+            this.frames.val * this.width, // x (cropping)
+            0, // y (cropping)
+            this.image.width / this.frames.max, // (cropping)
+            this.image.height, // (cropping)
+            this.position.x,
+            this.position.y,
+            this.image.width / this.frames.max,
+            this.image.height)
+        
+        if (!this.moving) return
+        if (this.frames.max > 1) {
+                this.frames.elapsed++
+            }  
+        if (this.frames.elapsed % 10 === 0) {
+            if (this.frames.val < this.frames.max - 1) this.frames.val++
+            else this.frames.val = 0
+            }
+        
     }
 }
 
 class Boundary {
-    static width = 80
-    static height = 80
+    static width = 48
+    static height = 48
     constructor({position}) {
         this.position = position
-        this.width = 80
-        this.height = 80
+        this.width = 48
+        this.height = 48
     }
 
     draw () {

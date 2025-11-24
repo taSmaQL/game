@@ -2,6 +2,7 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d'); // c = context
 
 
+
 canvas.width = 1800;
 canvas.height = 1100;
 
@@ -34,9 +35,17 @@ image.src = './img/svoZoomed.png'
 const FGimage = new Image() // FG = ForeGround
 FGimage.src = './img/svoForeground.png'
 
-const plImage = new Image() // plImage = playerImage
-plImage.src ='./img/playerDown.png'
+const plDownImage = new Image() // plImage = playerImage
+plDownImage.src ='./img/playerDown.png'
 
+const plUpImage = new Image() 
+plUpImage.src ='./img/playerUp.png'
+
+const plLeftImage = new Image() 
+plLeftImage.src ='./img/playerLeft.png'
+
+const plRightImage = new Image() 
+plRightImage.src ='./img/playerRight.png'
 
 
 // canvas.width / 7,
@@ -47,9 +56,15 @@ const player = new Sprite({
     x:canvas.width / 7,
     y:canvas.height / 1.6
     },
-    image: plImage,
+    image: plDownImage,
     frames: {
         max: 4
+    },
+    sprites: {
+        up: plUpImage,
+        left: plLeftImage,
+        right: plRightImage,
+        down: plDownImage
     }
 })
 
@@ -111,7 +126,10 @@ function animate() {
 
 
     let moving = true
+    player.moving = false
         if (keys.w.pressed) {
+    player.moving = true
+    player.image = player.sprites.up
     for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
@@ -132,6 +150,8 @@ function animate() {
     
 }
         else if (keys.a.pressed) {
+        player.image = player.sprites.left    
+        player.moving = true
         for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
@@ -151,6 +171,8 @@ function animate() {
     movables.forEach((movable) => {movable.position.x += 2})
 }
         else if (keys.s.pressed) {
+        player.image = player.sprites.down    
+        player.moving = true
         for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
@@ -170,6 +192,8 @@ function animate() {
     movables.forEach((movable) => {movable.position.y -= 2})
 }
         else if (keys.d.pressed) {
+        player.image = player.sprites.right   
+        player.moving = true
         for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
@@ -189,8 +213,6 @@ function animate() {
     movables.forEach((movable) => {movable.position.x -= 2})
 }
 }
-
-
 
 animate()
  
@@ -227,5 +249,10 @@ window.addEventListener('keyup', (e) => {
             break
     }
 })
-
-
+let clicked = false
+addEventListener('click', () => {
+    if (!clicked) {
+        audio.Map.play()
+        clicked = true
+    }
+})
