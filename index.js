@@ -10,20 +10,7 @@ for (let i = 0; i < collisions.length; i+=70) { // 70 = width of the map
     collisionsMap.push(collisions.slice(i,i + 70)) // strange numbers: 1025 and garbage number.
 }
 
-class Boundary {
-    static width = 80
-    static height = 80
-    constructor({position}) {
-        this.position = position
-        this.width = 80
-        this.height = 80
-    }
 
-    draw () {
-        c.fillStyle = 'rgba(255,0,0,0)'
-        c.fillRect(this.position.x,this.position.y,this.width,this.height)
-    }
-}
 
 const boundaries = []
 const offset = {
@@ -44,33 +31,13 @@ collisionsMap.forEach ((row,i) => {
 const image = new Image()
 image.src = './img/svoZoomed.png'
 
+const FGimage = new Image() // FG = ForeGround
+FGimage.src = './img/svoForeground.png'
+
 const plImage = new Image() // plImage = playerImage
 plImage.src ='./img/playerDown.png'
 
-class Sprite {
-    constructor({position, velocity, image, frames = {max: 1} }) {
-        this.position = position
-        this.image = image
-        this.frames = frames
-        this.image.onload = () => {
-            this.width = this.image.width / this.frames.max
-            this.height = this.image.height
-        }
-        
-    }
 
-    draw() {
-        c.drawImage(this.image,
-        0, // x (cropping)
-        0, // y (cropping)
-        this.image.width / this.frames.max, // (cropping)
-        this.image.height, // (cropping)
-        this.position.x,
-        this.position.y,
-        this.image.width / this.frames.max,
-        this.image.height)
-    }
-}
 
 // canvas.width / 7,
 // canvas.height / 1.6,
@@ -94,6 +61,14 @@ const background = new Sprite({
     image: image
 })
 
+const foreground = new Sprite({
+    position: {
+        x: offset.x,
+        y: offset.y
+    },
+    image: FGimage
+})
+
 const keys = {
   w: {
     pressed: false
@@ -110,7 +85,7 @@ const keys = {
 }
 
 
-const movables = [background, ...boundaries]
+const movables = [background, ...boundaries, foreground]
 
 function rectangularCollision({rectangle0,rectangle1}) {
     return (
@@ -132,6 +107,9 @@ function animate() {
          
 
     player.draw()
+    foreground.draw()
+
+
     let moving = true
         if (keys.w.pressed) {
     for (let i = 0; i < boundaries.length; i++) {
