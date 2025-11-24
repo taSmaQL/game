@@ -1,8 +1,6 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d'); // c = context
 
-
-
 canvas.width = 1800;
 canvas.height = 1100;
 
@@ -150,8 +148,8 @@ function animate() {
     
 }
         else if (keys.a.pressed) {
-        player.image = player.sprites.left    
         player.moving = true
+        player.image = player.sprites.left    
         for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
@@ -171,8 +169,8 @@ function animate() {
     movables.forEach((movable) => {movable.position.x += 2})
 }
         else if (keys.s.pressed) {
-        player.image = player.sprites.down    
         player.moving = true
+        player.image = player.sprites.down    
         for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
@@ -192,8 +190,8 @@ function animate() {
     movables.forEach((movable) => {movable.position.y -= 2})
 }
         else if (keys.d.pressed) {
-        player.image = player.sprites.right   
         player.moving = true
+        player.image = player.sprites.right   
         for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i]
         if (
