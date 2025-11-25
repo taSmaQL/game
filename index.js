@@ -1,3 +1,5 @@
+// character + dialogue with them (Lore).
+
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d'); // c = context
 
@@ -31,7 +33,7 @@ const image = new Image()
 image.src = './img/svoZoomed.png'
 
 const FGimage = new Image() // FG = ForeGround
-FGimage.src = './img/svoForeground.png'
+FGimage.src = './img/foreground.png'
 
 const plDownImage = new Image() // plDownImage = playerImage for bottom view of player
 plDownImage.src ='./img/playerDown.png'
@@ -242,11 +244,15 @@ window.addEventListener('keyup', (e) => {
     }
 }) 
 
+
 // Audio will play if a player is clicking on the web-page
 let clicked = false
 addEventListener('click', () => {
     if (!clicked) {
-        audio.Map.play()
+        if (Math.random() < 0.5)
+            audio.Map.play()
+        else 
+            audio2.Map.play()
         clicked = true
     }
 })
