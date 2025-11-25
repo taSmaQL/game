@@ -131,7 +131,7 @@ function animate() {
                 rectangle0: player,
                 rectangle1: {...boundary, position: {
                     x: boundary.position.x,
-                    y: boundary.position.y + 2
+                    y: boundary.position.y + 4
                 }}
             })
         ) {
@@ -140,7 +140,7 @@ function animate() {
         }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.y += 2})
+        movables.forEach((movable) => {movable.position.y += 4})
     
 }
     else if (keys.a.pressed) {
@@ -152,7 +152,7 @@ function animate() {
         rectangularCollision({
             rectangle0: player,
             rectangle1: {...boundary, position: {
-                x: boundary.position.x + 2,
+                x: boundary.position.x + 4,
                 y: boundary.position.y
             }}
         })
@@ -162,7 +162,7 @@ function animate() {
     }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.x += 2})
+        movables.forEach((movable) => {movable.position.x += 4})
 }
     else if (keys.s.pressed) {
     player.moving = true
@@ -174,7 +174,7 @@ function animate() {
             rectangle0: player,
             rectangle1: {...boundary, position: {
                 x: boundary.position.x,
-                y: boundary.position.y - 2
+                y: boundary.position.y - 4
             }}
         })
     ) {
@@ -183,7 +183,7 @@ function animate() {
     }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.y -= 2})
+        movables.forEach((movable) => {movable.position.y -= 4})
 }
     else if (keys.d.pressed) {
     player.moving = true
@@ -194,7 +194,7 @@ function animate() {
         rectangularCollision({
             rectangle0: player,
             rectangle1: {...boundary, position: {
-                x: boundary.position.x - 2,
+                x: boundary.position.x - 4,
                 y: boundary.position.y
             }}
         })
@@ -204,7 +204,7 @@ function animate() {
     }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.x -= 2})
+        movables.forEach((movable) => {movable.position.x -= 4})
 }
 }
 
