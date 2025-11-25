@@ -47,6 +47,30 @@ plLeftImage.src ='./img/playerLeft.png'
 const plRightImage = new Image() 
 plRightImage.src ='./img/playerRight.png'
 
+const npc1Image = new Image()
+npc1Image.src = './img/playerDown.png'
+
+const characters = [
+    new Character({
+        position: {
+            x: 900,
+            y: 600
+        },
+        image: npc1Image,
+        frames: { max: 4 },
+        name: "Старый мудрец",
+        dialogues: [
+            "Приветствую, путник! Я давно ждал тебя.",
+            "В этих землях происходят странные вещи. Древние预言ния начинают сбываться.",
+            "Будь осторожен в своих странствиях. Не все, что блестит - золото.",
+            "Удачи тебе в твоем путешествии!"
+        ]
+    })
+    // Добавьте других персонажей по аналогии
+]
+
+const dialogueBox = new DialogueBox()
+
 const player = new Sprite({
     position: {
     x:canvas.width / 7,
@@ -96,7 +120,29 @@ const keys = {
 }
 
 
-const movables = [background, ...boundaries, foreground]
+const movables = [background, ...boundaries, foreground, ...characters]
+
+function checkCharacterCollision() {
+    for (let i = 0; i < characters.length; i++) {
+        const character = characters[i]
+        // Увеличиваем зону взаимодействия для удобства
+        const interactionRange = 100
+        
+        const distance = Math.sqrt(
+            Math.pow(player.position.x - character.position.x, 2) + 
+            Math.pow(player.position.y - character.position.y, 2)
+        )
+        
+        if (distance < interactionRange && !dialogueBox.isActive) {
+            // Показываем подсказку для взаимодействия
+            c.fillStyle = 'white'
+            c.font = '20px Arial'
+            c.fillText('Нажмите E для разговора', character.position.x - 50, character.position.y - 40)
+            return character
+        }
+    }
+    return null
+}
 
 function rectangularCollision({rectangle0,rectangle1}) {
     return (
@@ -114,13 +160,21 @@ function animate() {
 
     
     })
-    
+    characters.forEach(character => {
+        character.draw()
+    })
+
     player.draw()
     foreground.draw()
+
+    dialogueBox.draw()
 
     let moving = true
     player.moving = false
 
+    if (dialogueBox.isActive) {
+        moving = false
+    }
     if (keys.w.pressed) {
     player.moving = true
     player.image = player.sprites.up
@@ -223,6 +277,23 @@ window.addEventListener('keydown', (e) => {
             break
         case 'd':
             keys.d.pressed = true
+            break
+        case 'e':
+        case 'E':
+            if (!dialogueBox.isActive) {
+                const nearbyCharacter = checkCharacterCollision()
+                if (nearbyCharacter) {
+                    const dialogue = nearbyCharacter.interact()
+                    dialogueBox.show(nearbyCharacter, dialogue)
+                }
+            } else {
+                const nextDialogue = dialogueBox.currentCharacter.nextDialogue()
+                if (nextDialogue) {
+                    dialogueBox.show(dialogueBox.currentCharacter, nextDialogue)
+                } else {
+                    dialogueBox.hide()
+                }
+            }
             break
     }
 })
