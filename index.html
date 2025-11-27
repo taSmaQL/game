@@ -3,12 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game</title>
+    <title>Путь защитника</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            margin: 0;
+            padding: 0;
+            background: #000 url('./img/minecraft.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+            position: relative;
+        }
         
+        .game-title {
+            position: absolute;
+            top: 30px;
+            left: 380px;
+            color: #ff3f3f;
+            font-size: 36px;
+            text-shadow: 3px 3px 0 #000, 
+                        -1px -1px 0 #000, 
+                        1px -1px 0 #000, 
+                        -1px 1px 0 #000;
+            z-index: 10;
+            letter-spacing: 2px;
+        }
+        
+        canvas {
+            top: 80px;
+            display: block;
+            margin: 0 auto;
+            border: 3px solid #8B4513;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+            z-index: 1;
+        }
+        
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
     </style>
 </head>
 <body>
+    <div class="game-title">ПУТЬ ЗАЩИТНИКА</div>
     <canvas></canvas>
     <script 
     src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js" 

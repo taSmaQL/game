@@ -11,6 +11,7 @@ class Sprite {
         this.sprites = sprites
     }
 
+    
     draw() {
         c.drawImage(
             this.image,
@@ -35,6 +36,7 @@ class Sprite {
     }
 }
 
+
 class Boundary {
     static width = 80
     static height = 80
@@ -44,14 +46,16 @@ class Boundary {
         this.height = 80
     }
 
+    
     draw () {
         c.fillStyle = 'rgba(255,0,0,0)'
         c.fillRect(this.position.x,this.position.y,this.width,this.height)
     }
 }
 
+
 class Character {
-    constructor({position, image, frames = {max: 1}, name, dialogues = []}) {
+    constructor({position, image, frames = {max: 1}, name, dialogues = [], choices = []}) {
         this.position = position
         this.image = image
         this.frames = {...frames, val: 0, elapsed: 0}
@@ -60,10 +64,66 @@ class Character {
             this.height = this.image.height
         }
         this.name = name
-        this.dialogues = dialogues
-        this.currentDialogue = 0
+        this.dialogues = dialogues 
+        this.choices = choices     
+        this.currentDialogue = 'start' 
         this.isInteracting = false
+        this.dialogueHistory = [] 
     }
+
+
+    interact() {
+        if (!this.dialogues[this.currentDialogue]) return null
+        
+        this.isInteracting = true
+        
+        const currentDialogue = this.dialogues[this.currentDialogue]
+        
+    
+        if (this.choices[this.currentDialogue]) {
+            return {
+                type: 'choice',
+                question: currentDialogue.text || currentDialogue,
+                choices: this.choices[this.currentDialogue]
+            }
+        }
+        
+
+        return {
+            type: 'dialogue',
+            text: currentDialogue.text || currentDialogue
+        }
+    }
+
+
+    nextDialogue(choiceResult = null) {
+    
+        if (choiceResult && choiceResult.nextBranch) {
+            this.dialogueHistory.push(this.currentDialogue)
+            this.currentDialogue = choiceResult.nextBranch
+        } 
+      
+        else if (this.dialogues[this.currentDialogue].next) {
+            this.dialogueHistory.push(this.currentDialogue)
+            this.currentDialogue = this.dialogues[this.currentDialogue].next
+        }
+        
+        else {
+            this.isInteracting = false
+            this.currentDialogue = 'start'
+            return null
+        }
+        
+        return this.interact()
+    }
+
+    continueAfterChoice(selectedChoice) {
+        if (selectedChoice && selectedChoice.nextBranch) {
+            return this.nextDialogue(selectedChoice)
+        }
+        return this.nextDialogue()
+    }
+
 
     draw() {
         c.drawImage(
@@ -77,91 +137,145 @@ class Character {
             this.image.width / this.frames.max,
             this.image.height
         )
-        
-        // Анимация персонажа (если нужно)
-        if (this.frames.max > 1) {
-            this.frames.elapsed++
-            if (this.frames.elapsed % 20 === 0) {
-                if (this.frames.val < this.frames.max - 1) this.frames.val++
-                else this.frames.val = 0
-            }
-        }
-    }
-
-    interact() {
-        if (this.dialogues.length === 0) return
-        
-        this.isInteracting = true
-        return this.dialogues[this.currentDialogue]
-    }
-
-    nextDialogue() {
-        this.currentDialogue++
-        if (this.currentDialogue >= this.dialogues.length) {
-            this.currentDialogue = 0
-            this.isInteracting = false
-            return null
-        }
-        return this.dialogues[this.currentDialogue]
     }
 }
 
-// Класс для окна диалога
-class DialogueBox {
-    constructor() {
+
+class ChoiceSystem {
+    constructor(dialogueBox) {
         this.isActive = false
-        this.currentText = ''
+        this.question = ''
+        this.choices = []
+        this.selectedIndex = 0
+        this.dialogueBox = dialogueBox
         this.currentCharacter = null
+        this.autoContinue = true
     }
 
-    show(character, text) {
+
+    show(question, choices, character) {
         this.isActive = true
+        this.question = question
+        this.choices = choices
+        this.selectedIndex = 0
         this.currentCharacter = character
-        this.currentText = text
     }
+    
 
     hide() {
         this.isActive = false
-        this.currentText = ''
+        this.question = ''
+        this.choices = []
+        this.selectedIndex = 0
         this.currentCharacter = null
     }
+
+
+    nextChoice() {
+        this.selectedIndex = (this.selectedIndex + 1) % this.choices.length
+    }
+
+
+    previousChoice() {
+        this.selectedIndex = (this.selectedIndex - 1 + this.choices.length) % this.choices.length
+    }
+
+
+    selectChoice() {
+        if (this.isActive && this.choices[this.selectedIndex]) {
+            const selectedChoice = this.choices[this.selectedIndex]
+            console.log(selectedChoice.value)
+            
+            let nextContent = null 
+            
+           
+            if (this.currentCharacter) {
+                nextContent = this.currentCharacter.continueAfterChoice(selectedChoice)
+                if (nextContent) {
+                    
+                    if (nextContent.type === 'dialogue') {
+                        this.dialogueBox.show(this.currentCharacter, nextContent)
+                    } 
+                  
+                    else if (nextContent.type === 'choice') {
+                        this.show(nextContent.question, nextContent.choices, this.currentCharacter)
+                        return selectedChoice 
+                    }
+                } else {
+                    this.dialogueBox.hide()
+                }
+            }
+            
+            
+            if (!nextContent || nextContent.type !== 'choice') {
+                this.hide()
+            }
+            
+            return selectedChoice
+        }
+        return null
+    }
+
 
     draw() {
         if (!this.isActive) return
 
-        // Рисуем фон диалогового окна
-        c.fillStyle = 'rgba(0, 0, 0, 0.8)'
-        c.fillRect(50, canvas.height - 200, canvas.width - 100, 150)
+      
+        const choiceHeight = 40
+        const padding = 20
+        const questionHeight = 60
+        const height = questionHeight + (this.choices.length * choiceHeight) + padding
+
+       
+        c.fillStyle = 'rgba(0, 0, 0, 0.9)'
+        c.fillRect(100, canvas.height - height - 50, canvas.width - 200, height)
         
-        // Рамка
-        c.strokeStyle = 'gold'
+
+        c.strokeStyle = '#FFFFFF'
         c.lineWidth = 3
-        c.strokeRect(50, canvas.height - 200, canvas.width - 100, 150)
+        c.strokeRect(100, canvas.height - height - 50, canvas.width - 200, height)
 
-        // Имя персонажа
-        c.fillStyle = 'gold'
-        c.font = 'bold 24px Arial'
-        c.fillText(this.currentCharacter?.name || 'Неизвестный', 80, canvas.height - 160)
+       
+        c.fillStyle = '#FFFF00'
+        c.font = '12px "Press Start 2P", cursive'
+        c.textAlign = 'center'
+        this.wrapText(this.question, canvas.width / 2, canvas.height - height - 10, canvas.width - 240, 20)
 
-        // Текст диалога
-        c.fillStyle = 'white'
-        c.font = '20px Arial'
-        this.wrapText(this.currentText, 80, canvas.height - 120, canvas.width - 160, 24)
+ 
+        c.textAlign = 'left'
+        c.font = '10px "Press Start 2P", cursive'
+        
 
-        // Подсказка для продолжения
-        c.fillStyle = 'yellow'
-        c.font = '16px Arial'
-        c.fillText('Нажмите E для продолжения...', canvas.width - 250, canvas.height - 40)
+        this.choices.forEach((choice, index) => {
+            const yPos = canvas.height - height + 30 + (index * choiceHeight)
+            
+        
+            if (index === this.selectedIndex) {
+                c.fillStyle = '#FFFFFF'
+                c.fillText('>', canvas.width / 2 - 100, yPos)
+                c.fillStyle = '#FFFF00'
+            } else {
+                c.fillStyle = '#AAAAAA'
+            }
+            
+            
+            this.wrapText(choice.text, canvas.width / 2 - 80, yPos, canvas.width - 300, 15)
+        })
+
+        
+        c.fillStyle = '#888888'
+        c.font = '8px "Press Start 2P", cursive'
+        c.textAlign = 'center'
+        c.fillText('СТРЕЛКИ: ВЫБОР | ENTER: ПОДТВЕРДИТЬ', canvas.width / 2, canvas.height - 15)
     }
 
     wrapText(text, x, y, maxWidth, lineHeight) {
         const words = text.split(' ')
         let line = ''
-        let testLine = ''
         let currentY = y
 
         for (let n = 0; n < words.length; n++) {
-            testLine = line + words[n] + ' '
+            const testLine = line + words[n] + ' '
             const metrics = c.measureText(testLine)
             const testWidth = metrics.width
             
@@ -176,3 +290,100 @@ class DialogueBox {
         c.fillText(line, x, currentY)
     }
 }
+
+
+class DialogueBox {
+    constructor() {
+        this.isActive = false
+        this.currentText = ''
+        this.currentCharacter = null
+        this.choiceSystem = null 
+    }
+
+    show(character, content) {
+        if (content.type === 'choice') {
+            this.choiceSystem.show(content.question, content.choices, character)
+            this.isActive = false
+        } else {
+            this.isActive = true
+            this.currentCharacter = character
+            this.currentText = content.text
+        }
+    }
+
+    hide() {
+        this.isActive = false
+        this.currentText = ''
+        this.currentCharacter = null
+    }
+
+    draw() {
+        if (!this.isActive || this.choiceSystem.isActive) return
+        
+        
+        const boxWidth = canvas.width - 100
+        const boxHeight = 200
+        const boxX = 50
+        const boxY = canvas.height - boxHeight - 50
+
+       
+        c.fillStyle = '#404040'
+        c.fillRect(boxX, boxY, boxWidth, boxHeight)
+        
+      
+        c.strokeStyle = '#000000'
+        c.lineWidth = 3
+        c.strokeRect(boxX, boxY, boxWidth, boxHeight)
+
+      
+        c.strokeStyle = '#A0A0A0'
+        c.lineWidth = 1
+        c.strokeRect(boxX + 3, boxY + 3, boxWidth - 6, boxHeight - 6)
+
+        
+        c.fillStyle = '#FFFF00'
+        c.font = 'bold 24px "Press Start 2P", cursive'
+        c.textAlign = 'left'
+        c.textBaseline = 'top'
+        c.fillText(this.currentCharacter?.name || 'НЕИЗВЕСТНЫЙ', boxX + 20, boxY + 20)
+
+
+        c.fillStyle = '#FFFFFF'
+        c.font = '22px "Press Start 2P", cursive' 
+        c.textAlign = 'left'
+        c.textBaseline = 'top'
+        this.wrapText(this.currentText, boxX + 20, boxY + 60, boxWidth - 40, 18) 
+
+
+        c.fillStyle = '#AAAAAA'
+        c.font = '10px "Press Start 2P", cursive'
+        c.fillText('НАЖМИТЕ E ДЛЯ ПРОДОЛЖЕНИЯ', boxX + 20, boxY + boxHeight - 30)
+    }
+
+    wrapText(text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ')
+        let line = ''
+        let currentY = y
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' '
+            const metrics = c.measureText(testLine)
+            const testWidth = metrics.width
+            
+            if (testWidth > maxWidth && n > 0) {
+                c.fillText(line, x, currentY)
+                line = words[n] + ' '
+                currentY += lineHeight
+                
+                if (currentY > canvas.height - 100) {
+                    c.fillText('...', x, currentY)
+                    break
+                }
+            } else {
+                line = testLine
+            }
+        }
+        c.fillText(line, x, currentY)
+    }
+}
+

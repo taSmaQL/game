@@ -1,16 +1,15 @@
-// character + dialogue with them (Lore).
-
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d'); // c = context
+
 
 canvas.width = 1800;
 canvas.height = 1100;
 
-const collisionsMap = []
+const
+ collisionsMap = []
 for (let i = 0; i < collisions.length; i+=70) { // 70 = width of the map
     collisionsMap.push(collisions.slice(i,i + 70)) // strange numbers: 1025 and garbage number.
 }
-
 
 
 const boundaries = []
@@ -18,6 +17,8 @@ const offset = {
     x: 0,
     y: -1900
 }
+
+
 collisionsMap.forEach ((row,i) => {
     row.forEach((symbol,j) => {
         if (symbol > 0)
@@ -29,47 +30,150 @@ collisionsMap.forEach ((row,i) => {
     })
 })
 
+
 const image = new Image()
 image.src = './img/svoZoomed.png'
+
 
 const FGimage = new Image() // FG = ForeGround
 FGimage.src = './img/foreground.png'
 
+
 const plDownImage = new Image() // plDownImage = playerImage for bottom view of player
 plDownImage.src ='./img/playerDown.png'
+
 
 const plUpImage = new Image()  // same as plDownImage but for Top view of player and etc.
 plUpImage.src ='./img/playerUp.png'
 
+
 const plLeftImage = new Image() 
 plLeftImage.src ='./img/playerLeft.png'
+
 
 const plRightImage = new Image() 
 plRightImage.src ='./img/playerRight.png'
 
+
 const npc1Image = new Image()
 npc1Image.src = './img/playerDown.png'
 
+
 const characters = [
     new Character({
-        position: {
-            x: 900,
-            y: 600
-        },
+        position: { x: 300, y: 590 },
         image: npc1Image,
         frames: { max: 4 },
         name: "Старый мудрец",
-        dialogues: [
-            "Приветствую, путник! Я давно ждал тебя.",
-            "В этих землях происходят странные вещи. Древние预言ния начинают сбываться.",
-            "Будь осторожен в своих странствиях. Не все, что блестит - золото.",
-            "Удачи тебе в твоем путешествии!"
-        ]
+        dialogues: {
+            'start': "Приветствую, путник! Ты ищешь приключений?",
+            
+            'adventure_yes': {
+                text: "Отлично! Я могу предложить тебе два пути:",
+                next: 'path_choice'
+            },
+            'path_choice': "Какой путь ты выберешь?",
+            'path_forest': "Лес таит древние секреты, но будь осторожен с тенями...",
+            'path_mountains': "В горах обитают мудрые драконы, они могут многому научить.",
+              
+            'adventure_no': "Понимаю... Иногда спокойная жизнь - лучший выбор.",
+            
+            'what_offer': "Я могу рассказать тебе о древних пророчествах или научить магии.",
+            'prophecies': "Древние预言ния говорят о возвращении Тёмного Властелина...",
+            'magic': "Магия требует терпения и мудрости. Начнём с основ.",
+            
+            'end_forest': "Удачи в лесу, путник! Вернись и расскажи о своих находках.",
+            'end_mountains': "Пусть горные ветры укажут тебе верный путь!",
+            'end_calm': "Наслаждайся миром и спокойствием. Это тоже дар.",
+            'end_prophecies': "Запомни эти слова - они могут спасти мир однажды...",
+            'end_magic': "Практикуйся ежедневно, и ты станешь великим магом."
+        },
+        choices: {
+            'start': [
+                { 
+                    text: "Да, я ищу славы и богатства", 
+                    value: 1,
+                    nextBranch: 'adventure_yes'
+                },
+                { 
+                    text: "Нет, я просто путешествую", 
+                    value: 2,
+                    nextBranch: 'adventure_no'
+                },
+                { 
+                    text: "А что ты предлагаешь?", 
+                    value: 3,
+                    nextBranch: 'what_offer'
+                }
+            ],
+            'path_choice': [
+                {
+                    text: "Пойти через древний лес",
+                    value: 4,
+                    nextBranch: 'path_forest'
+                },
+                {
+                    text: "Подняться в заснеженные горы", 
+                    value: 5,
+                    nextBranch: 'path_mountains'
+                }
+            ],
+            'what_offer': [
+                {
+                    text: "Расскажи о пророчествах",
+                    value: 6,
+                    nextBranch: 'prophecies'
+                },
+                {
+                    text: "Научи меня магии",
+                    value: 7, 
+                    nextBranch: 'magic'
+                }
+            ],
+            'adventure_no': [
+                {
+                    text: "Спасибо за понимание",
+                    value: 8,
+                    nextBranch: 'end_calm'
+                }
+            ],
+            'path_forest': [
+                {
+                    text: "Отправляюсь в лес!",
+                    value: 9,
+                    nextBranch: 'end_forest'
+                }
+            ],
+            'path_mountains': [
+                {
+                    text: "Иду в горы!",
+                    value: 10,
+                    nextBranch: 'end_mountains'
+                }
+            ],
+            'prophecies': [
+                {
+                    text: "Понял, буду готов",
+                    value: 11,
+                    nextBranch: 'end_prophecies'
+                }
+            ],
+            'magic': [
+                {
+                    text: "Начинаем обучение!",
+                    value: 12,
+                    nextBranch: 'end_magic'
+                }
+            ]
+        }
     })
-    // Добавьте других персонажей по аналогии
 ]
 
+
 const dialogueBox = new DialogueBox()
+const choiceSystem = new ChoiceSystem(dialogueBox)
+dialogueBox.choiceSystem = choiceSystem
+
 
 const player = new Sprite({
     position: {
@@ -88,6 +192,7 @@ const player = new Sprite({
     }
 })
 
+
 const background = new Sprite({
     position: {
         x: offset.x,
@@ -96,6 +201,7 @@ const background = new Sprite({
     image: image
 })
 
+
 const foreground = new Sprite({
     position: {
         x: offset.x,
@@ -103,6 +209,7 @@ const foreground = new Sprite({
     },
     image: FGimage
 })
+
 
 const keys = {
   w: {
@@ -125,7 +232,6 @@ const movables = [background, ...boundaries, foreground, ...characters]
 function checkCharacterCollision() {
     for (let i = 0; i < characters.length; i++) {
         const character = characters[i]
-        // Увеличиваем зону взаимодействия для удобства
         const interactionRange = 100
         
         const distance = Math.sqrt(
@@ -134,7 +240,6 @@ function checkCharacterCollision() {
         )
         
         if (distance < interactionRange && !dialogueBox.isActive) {
-            // Показываем подсказку для взаимодействия
             c.fillStyle = 'white'
             c.font = '20px Arial'
             c.fillText('Нажмите E для разговора', character.position.x - 50, character.position.y - 40)
@@ -144,6 +249,7 @@ function checkCharacterCollision() {
     return null
 }
 
+
 function rectangularCollision({rectangle0,rectangle1}) {
     return (
         rectangle0.position.x + rectangle0.width >= rectangle1.position.x && 
@@ -152,6 +258,8 @@ function rectangularCollision({rectangle0,rectangle1}) {
         rectangle0.position.y + rectangle0.height >= rectangle1.position.y
     )
 }
+
+
 function animate() {
     window.requestAnimationFrame(animate)
     background.draw()
@@ -168,7 +276,7 @@ function animate() {
     foreground.draw()
 
     dialogueBox.draw()
-
+    choiceSystem.draw()
     let moving = true
     player.moving = false
 
@@ -262,7 +370,9 @@ function animate() {
 }
 }
 
+
 animate()
+
 
 window.addEventListener('keydown', (e) => {
     switch (e.key) {
@@ -279,24 +389,40 @@ window.addEventListener('keydown', (e) => {
             keys.d.pressed = true
             break
         case 'e':
-        case 'E':
-            if (!dialogueBox.isActive) {
+         case 'E':
+            if (choiceSystem.isActive) {
+                choiceSystem.selectChoice()
+            } else if (!dialogueBox.isActive) {
                 const nearbyCharacter = checkCharacterCollision()
                 if (nearbyCharacter) {
-                    const dialogue = nearbyCharacter.interact()
-                    dialogueBox.show(nearbyCharacter, dialogue)
+                    const content = nearbyCharacter.interact()
+                    dialogueBox.show(nearbyCharacter, content)
                 }
             } else {
-                const nextDialogue = dialogueBox.currentCharacter.nextDialogue()
-                if (nextDialogue) {
-                    dialogueBox.show(dialogueBox.currentCharacter, nextDialogue)
+                
+                const nextContent = dialogueBox.currentCharacter.nextDialogue()
+                if (nextContent) {
+                    dialogueBox.show(dialogueBox.currentCharacter, nextContent)
                 } else {
                     dialogueBox.hide()
                 }
             }
             break
+        case 'ArrowUp':
+            if (choiceSystem.isActive) choiceSystem.previousChoice()
+            break
+        case 'ArrowDown':
+            if (choiceSystem.isActive) choiceSystem.nextChoice()
+            break
+        case 'Enter':
+            
+            if (choiceSystem.isActive) {
+                choiceSystem.selectChoice()
+            }
+            break
     }
 })
+
 
 window.addEventListener('keyup', (e) => {
     switch (e.key) {
@@ -316,7 +442,6 @@ window.addEventListener('keyup', (e) => {
 }) 
 
 
-// Audio will play if a player is clicking on the web-page
 let clicked = false
 addEventListener('click', () => {
     if (!clicked) {
