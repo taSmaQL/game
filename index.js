@@ -5,17 +5,18 @@ const c = canvas.getContext('2d'); // c = context
 canvas.width = 1800;
 canvas.height = 1100;
 
-const
- collisionsMap = []
-for (let i = 0; i < collisions.length; i+=70) { // 70 = width of the map
-    collisionsMap.push(collisions.slice(i,i + 70)) // strange numbers: 1025 and garbage number.
+
+
+const collisionsMap = []
+for (let i = 0; i < collisions.length; i+=150) { // 150 = width of the map
+    collisionsMap.push(collisions.slice(i,i + 150)) // strange numbers: 1025 and garbage number.
 }
 
 
 const boundaries = []
 const offset = {
-    x: 0,
-    y: -1900
+    x: -800,
+    y: -2350
 }
 
 
@@ -32,7 +33,7 @@ collisionsMap.forEach ((row,i) => {
 
 
 const image = new Image()
-image.src = './img/svoZoomed.png'
+image.src = './img/map.png'
 
 
 const FGimage = new Image() // FG = ForeGround
@@ -61,7 +62,7 @@ npc1Image.src = './img/playerDown.png'
 
 const characters = [
     new Character({
-        position: { x: 300, y: 590 },
+        position: { x: 1447, y: 467 },
         image: npc1Image,
         frames: { max: 4 },
         name: "Старый мудрец",
@@ -177,8 +178,8 @@ dialogueBox.choiceSystem = choiceSystem
 
 const player = new Sprite({
     position: {
-    x:canvas.width / 7,
-    y:canvas.height / 1.6
+    x:canvas.width / 2 + 150,
+    y:canvas.height / 2 
     },
     image: plDownImage,
     frames: {
@@ -260,6 +261,7 @@ function rectangularCollision({rectangle0,rectangle1}) {
 }
 
 
+
 function animate() {
     window.requestAnimationFrame(animate)
     background.draw()
@@ -271,12 +273,12 @@ function animate() {
     characters.forEach(character => {
         character.draw()
     })
-
     player.draw()
     foreground.draw()
 
     dialogueBox.draw()
     choiceSystem.draw()
+
     let moving = true
     player.moving = false
 
@@ -293,7 +295,7 @@ function animate() {
                 rectangle0: player,
                 rectangle1: {...boundary, position: {
                     x: boundary.position.x,
-                    y: boundary.position.y + 4
+                    y: boundary.position.y + 8
                 }}
             })
         ) {
@@ -302,7 +304,7 @@ function animate() {
         }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.y += 4})
+        movables.forEach((movable) => {movable.position.y += 8})
     
 }
     else if (keys.a.pressed) {
@@ -314,7 +316,7 @@ function animate() {
         rectangularCollision({
             rectangle0: player,
             rectangle1: {...boundary, position: {
-                x: boundary.position.x + 4,
+                x: boundary.position.x + 8,
                 y: boundary.position.y
             }}
         })
@@ -324,7 +326,7 @@ function animate() {
     }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.x += 4})
+        movables.forEach((movable) => {movable.position.x += 8})
 }
     else if (keys.s.pressed) {
     player.moving = true
@@ -336,7 +338,7 @@ function animate() {
             rectangle0: player,
             rectangle1: {...boundary, position: {
                 x: boundary.position.x,
-                y: boundary.position.y - 4
+                y: boundary.position.y - 8
             }}
         })
     ) {
@@ -345,7 +347,7 @@ function animate() {
     }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.y -= 4})
+        movables.forEach((movable) => {movable.position.y -= 8})
 }
     else if (keys.d.pressed) {
     player.moving = true
@@ -356,7 +358,7 @@ function animate() {
         rectangularCollision({
             rectangle0: player,
             rectangle1: {...boundary, position: {
-                x: boundary.position.x - 4,
+                x: boundary.position.x - 8,
                 y: boundary.position.y
             }}
         })
@@ -366,7 +368,7 @@ function animate() {
     }
     }
     if (moving)
-        movables.forEach((movable) => {movable.position.x -= 4})
+        movables.forEach((movable) => {movable.position.x -= 8})
 }
 }
 
@@ -452,3 +454,4 @@ addEventListener('click', () => {
         clicked = true
     }
 })
+
