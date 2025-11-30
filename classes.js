@@ -15,10 +15,10 @@ class Sprite {
     draw() {
         c.drawImage(
             this.image,
-            this.frames.val * this.width, // x (cropping)
-            0, // y (cropping)
-            this.image.width / this.frames.max, // (cropping)
-            this.image.height, // (cropping)
+            this.frames.val * this.width,
+            0,
+            this.image.width / this.frames.max,
+            this.image.height,
             this.position.x,
             this.position.y,
             this.image.width / this.frames.max,
@@ -71,15 +71,15 @@ class Character {
         this.dialogueHistory = [] 
     }
 
-
     interact() {
-        if (!this.dialogues[this.currentDialogue]) return null
+        if (!this.dialogues[this.currentDialogue]) {
+            return null
+        }
         
         this.isInteracting = true
         
         const currentDialogue = this.dialogues[this.currentDialogue]
         
-    
         if (this.choices[this.currentDialogue]) {
             return {
                 type: 'choice',
@@ -88,42 +88,40 @@ class Character {
             }
         }
         
-
         return {
             type: 'dialogue',
             text: currentDialogue.text || currentDialogue
         }
     }
 
-
     nextDialogue(choiceResult = null) {
-    
         if (choiceResult && choiceResult.nextBranch) {
-            this.dialogueHistory.push(this.currentDialogue)
             this.currentDialogue = choiceResult.nextBranch
-        } 
-      
-        else if (this.dialogues[this.currentDialogue].next) {
-            this.dialogueHistory.push(this.currentDialogue)
-            this.currentDialogue = this.dialogues[this.currentDialogue].next
+        } else {
+            const currentDialogue = this.dialogues[this.currentDialogue]
+            
+            if (currentDialogue && typeof currentDialogue === 'object' && currentDialogue.next) {
+                this.currentDialogue = currentDialogue.next
+            } else {
+                this.isInteracting = false
+                this.currentDialogue = 'start'
+                return null
+            }
         }
-        
-        else {
-            this.isInteracting = false
-            this.currentDialogue = 'start'
-            return null
-        }
-        
-        return this.interact()
+
+        const result = this.interact()
+        return result
     }
 
     continueAfterChoice(selectedChoice) {
         if (selectedChoice && selectedChoice.nextBranch) {
-            return this.nextDialogue(selectedChoice)
+            const result = this.nextDialogue(selectedChoice)
+            return result
+        } else {
+            const result = this.nextDialogue()
+            return result
         }
-        return this.nextDialogue()
     }
-
 
     draw() {
         c.drawImage(
@@ -149,9 +147,7 @@ class ChoiceSystem {
         this.selectedIndex = 0
         this.dialogueBox = dialogueBox
         this.currentCharacter = null
-        this.autoContinue = true
     }
-
 
     show(question, choices, character) {
         this.isActive = true
@@ -160,7 +156,6 @@ class ChoiceSystem {
         this.selectedIndex = 0
         this.currentCharacter = character
     }
-    
 
     hide() {
         this.isActive = false
@@ -170,86 +165,70 @@ class ChoiceSystem {
         this.currentCharacter = null
     }
 
-
     nextChoice() {
+        if (!this.isActive) return
         this.selectedIndex = (this.selectedIndex + 1) % this.choices.length
     }
 
-
     previousChoice() {
+        if (!this.isActive) return
         this.selectedIndex = (this.selectedIndex - 1 + this.choices.length) % this.choices.length
     }
 
-
     selectChoice() {
-        if (this.isActive && this.choices[this.selectedIndex]) {
+        if (!this.isActive) {
+            return null
+        }
+        
+        if (this.choices[this.selectedIndex]) {
             const selectedChoice = this.choices[this.selectedIndex]
-            console.log(selectedChoice.value)
             
-            let nextContent = null 
+            const currentCharacter = this.currentCharacter
             
-           
-            if (this.currentCharacter) {
-                nextContent = this.currentCharacter.continueAfterChoice(selectedChoice)
+            this.hide()
+        
+            if (currentCharacter) {
+                const nextContent = currentCharacter.continueAfterChoice(selectedChoice)
+                
                 if (nextContent) {
-                    
-                    if (nextContent.type === 'dialogue') {
-                        this.dialogueBox.show(this.currentCharacter, nextContent)
-                    } 
-                  
-                    else if (nextContent.type === 'choice') {
-                        this.show(nextContent.question, nextContent.choices, this.currentCharacter)
-                        return selectedChoice 
-                    }
+                    this.dialogueBox.show(currentCharacter, nextContent)
                 } else {
                     this.dialogueBox.hide()
                 }
             }
             
-            
-            if (!nextContent || nextContent.type !== 'choice') {
-                this.hide()
-            }
-            
             return selectedChoice
         }
+        
         return null
     }
-
 
     draw() {
         if (!this.isActive) return
 
-      
         const choiceHeight = 40
         const padding = 20
         const questionHeight = 60
         const height = questionHeight + (this.choices.length * choiceHeight) + padding
 
-       
         c.fillStyle = 'rgba(0, 0, 0, 0.9)'
         c.fillRect(100, canvas.height - height - 50, canvas.width - 200, height)
-        
 
         c.strokeStyle = '#FFFFFF'
         c.lineWidth = 3
         c.strokeRect(100, canvas.height - height - 50, canvas.width - 200, height)
 
-       
         c.fillStyle = '#FFFF00'
         c.font = '12px "Press Start 2P", cursive'
         c.textAlign = 'center'
         this.wrapText(this.question, canvas.width / 2, canvas.height - height - 10, canvas.width - 240, 20)
 
- 
         c.textAlign = 'left'
         c.font = '10px "Press Start 2P", cursive'
-        
 
         this.choices.forEach((choice, index) => {
             const yPos = canvas.height - height + 30 + (index * choiceHeight)
             
-        
             if (index === this.selectedIndex) {
                 c.fillStyle = '#FFFFFF'
                 c.fillText('>', canvas.width / 2 - 100, yPos)
@@ -258,11 +237,9 @@ class ChoiceSystem {
                 c.fillStyle = '#AAAAAA'
             }
             
-            
             this.wrapText(choice.text, canvas.width / 2 - 80, yPos, canvas.width - 300, 15)
         })
 
-        
         c.fillStyle = '#888888'
         c.font = '8px "Press Start 2P", cursive'
         c.textAlign = 'center'
@@ -320,40 +297,33 @@ class DialogueBox {
     draw() {
         if (!this.isActive || this.choiceSystem.isActive) return
         
-        
         const boxWidth = canvas.width - 100
         const boxHeight = 200
         const boxX = 50
         const boxY = canvas.height - boxHeight - 50
 
-       
         c.fillStyle = '#404040'
         c.fillRect(boxX, boxY, boxWidth, boxHeight)
         
-      
         c.strokeStyle = '#000000'
         c.lineWidth = 3
         c.strokeRect(boxX, boxY, boxWidth, boxHeight)
 
-      
         c.strokeStyle = '#A0A0A0'
         c.lineWidth = 1
         c.strokeRect(boxX + 3, boxY + 3, boxWidth - 6, boxHeight - 6)
 
-        
         c.fillStyle = '#FFFF00'
         c.font = 'bold 24px "Press Start 2P", cursive'
         c.textAlign = 'left'
         c.textBaseline = 'top'
         c.fillText(this.currentCharacter?.name || 'НЕИЗВЕСТНЫЙ', boxX + 20, boxY + 20)
 
-
         c.fillStyle = '#FFFFFF'
         c.font = '22px "Press Start 2P", cursive' 
         c.textAlign = 'left'
         c.textBaseline = 'top'
-        this.wrapText(this.currentText, boxX + 20, boxY + 60, boxWidth - 40, 18) 
-
+        this.wrapText(this.currentText, boxX + 20, boxY + 60, boxWidth - 40, 18)
 
         c.fillStyle = '#AAAAAA'
         c.font = '10px "Press Start 2P", cursive'
@@ -386,4 +356,3 @@ class DialogueBox {
         c.fillText(line, x, currentY)
     }
 }
-
