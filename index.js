@@ -57,14 +57,14 @@ plRightImage.src ='./img/playerRight.png'
 
 
 const npc1Image = new Image()
-npc1Image.src = './img/babushka.png'
+npc1Image.src = './heroes/babushka.png'
 
 const npc2Image = new Image()
-npc2Image.src = './img/daniil.png'
+npc2Image.src = './heroes/daniil.png'
 
 
 const npc3Image = new Image()
-npc3Image.src = './img/fermer.png'
+npc3Image.src = './heroes/fermer.png'
 
 const characters = [
     new Character({
